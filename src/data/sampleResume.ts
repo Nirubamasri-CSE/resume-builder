@@ -4,7 +4,7 @@ export const nirubamaResume: ResumeData = {
   profile: {
     id: '1',
     fullName: 'NIRUBAMA SRI R',
-    email: 'nirubamasrirgmail.com',
+    email: 'nirubamasrir@gmail.com',
     phone: '+91 9342840231',
     githubUrl: 'https://github.com/Nirubamasri-CSE',
     linkedinUrl: 'https://www.linkedin.com/in/nirubama-sri-r-408723227',
