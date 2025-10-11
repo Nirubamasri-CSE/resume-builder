@@ -13,6 +13,7 @@
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.344.0",
@@ -35,5 +36,18 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^7.1.9"
-  }
+  },
+  "description": "",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nirubamasri-CSE/resume-builder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nirubamasri-CSE/resume-builder/issues"
+  },
+  "homepage": "https://github.com/Nirubamasri-CSE/resume-builder#readme"
 }
