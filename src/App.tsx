@@ -89,7 +89,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <header className="bg-white shadow p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-800">Resume Builder</h1>
+        <h1 className="text-2xl font-bold text-slate-800"></h1>
         {user && (
           <div className="flex items-center gap-3">
             <span className="text-slate-600">Welcome, {user.name}</span>
