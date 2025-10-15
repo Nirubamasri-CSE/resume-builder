@@ -175,7 +175,7 @@ export default function ResumeForm({ onSubmit, initialData }: ResumeFormProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
 
   const { profile } = formData || {};
@@ -183,9 +183,11 @@ export default function ResumeForm({ onSubmit, initialData }: ResumeFormProps) {
   if (
     profile?.fullName === "NIRUBAMA SRI R" ||
     profile?.email === "nirubamasrir@email.com" ||
-    profile?.phone === "9342840231"
+    profile?.phone === "9342840231" ||
+    profile?.githubUrl === "https://github.com/Nirubamasri-CSE" ||
+    profile?.linkedinUrl === "https://www.linkedin.com/in/nirubama-sri-r-408723227"
   ) {
-    alert("⚠️ Please update your personal details before continuing!");
+    alert("⚠️ Please update your personal details, GitHub, and LinkedIn URLs before continuing!");
     return;
   }
 
