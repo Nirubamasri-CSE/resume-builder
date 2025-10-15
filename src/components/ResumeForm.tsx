@@ -176,9 +176,23 @@ export default function ResumeForm({ onSubmit, initialData }: ResumeFormProps) {
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
+  e.preventDefault();
+
+  const { profile } = formData || {};
+
+  if (
+    profile?.fullName === "NIRUBAMA SRI R" ||
+    profile?.email === "nirubamasrir@email.com" ||
+    profile?.phone === "9342840231"
+  ) {
+    alert("⚠️ Please update your personal details before continuing!");
+    return;
+  }
+
+  onSubmit(formData);
+};
+
+
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8 p-6">
