@@ -87,7 +87,7 @@ export default function Login({ onSuccess, onCancel }: Props) {
   return (
     <div style={wrapperStyle}>
       <h2 style={{ textAlign: "center", marginBottom: 10 }}>Welcome Back 👋</h2>
-      <p style={{ textAlign: "center", marginBottom: 20 }}>Please log in to continue</p>
+      <p style={{ textAlign: "center", marginBottom: 20 }}></p>
 
       <form onSubmit={submit}>
         <input
