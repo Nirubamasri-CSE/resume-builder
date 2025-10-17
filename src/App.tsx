@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
 import { FileText, PlusCircle, User, LogOut } from "lucide-react";
 import ResumeForm from "./components/ResumeForm";
-import ResumeView from "./components/ResumeView";
 import { nirubamaResume } from "./data/sampleResume";
 import { ResumeData } from "./types/resume";
 import Login from "./pages/login";
-import Signup from "./pages/signup"; 
+import Signup from "./pages/signup";
+import SavedResumes from "./components/SavedResumes";
+import "./index.css";
 
-type View =
-  | "login"
-  | "signup"
-  | "home"
-  | "create"
-  | "preview"
-  | "sample";
+type View = "login" | "signup" | "home" | "create" | "preview" | "sample" | "saved";
 
 function App() {
   const [currentView, setCurrentView] = useState<View>("login");
@@ -21,7 +16,7 @@ function App() {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
-  // Load user/token from localStorage on app start
+  // Prefill resumeData from localStorage if coming from View/Edit
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -32,9 +27,15 @@ function App() {
     } else {
       setCurrentView("login");
     }
+
+    const savedResume = localStorage.getItem("resumeData");
+    if (savedResume) {
+      setResumeData(JSON.parse(savedResume));
+      setCurrentView("create");
+      localStorage.removeItem("resumeData");
+    }
   }, []);
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -43,7 +44,6 @@ function App() {
     setCurrentView("login");
   };
 
-  // Handle login success
   const handleLoginSuccess = (newToken: string, newUser: { name: string; email: string }) => {
     setToken(newToken);
     setUser(newUser);
@@ -52,140 +52,150 @@ function App() {
     setCurrentView("home");
   };
 
-  // Handle signup success → redirect to login
   const handleSignupSuccess = () => {
     setCurrentView("login");
   };
 
-  const handleFormSubmit = (data: ResumeData) => {
+  const handleFormSubmit = async (data: ResumeData) => {
     setResumeData(data);
     setCurrentView("preview");
+
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("http://localhost:5000/api/resumes/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      console.log("Saved resume to backend ✅");
+    } catch (err) {
+      console.error("Error saving resume:", err);
+    }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // 🔒 If not logged in → show Login or Signup
+  // Show Login/Signup if not logged in
   if (!token && (currentView === "login" || currentView === "signup")) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#f1f5f9" }}>
         {currentView === "login" ? (
-          <Login
-            onSuccess={handleLoginSuccess}
-            onCancel={() => setCurrentView("signup")}
-          />
+          <Login onSuccess={handleLoginSuccess} onCancel={() => setCurrentView("signup")} />
         ) : (
-          <Signup
-            onSuccess={handleSignupSuccess}
-            onCancel={() => setCurrentView("login")}
-          />
+          <Signup onSuccess={handleSignupSuccess} onCancel={() => setCurrentView("login")} />
         )}
       </div>
     );
   }
 
-  // ✅ Authenticated view (resume builder)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <header className="bg-white shadow p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-800"></h1>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(to bottom right, #f8fafc, #f1f5f9)" }}>
+      {/* Header */}
+      <header
+        style={{
+          background: "#fff",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          padding: "15px 30px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         {user && (
-          <div className="flex items-center gap-3">
-            <span className="text-slate-600">Welcome, {user.name}</span>
+          <>
+            <span style={{ color: "#475569", fontWeight: "500" }}>
+              Welcome, {user.name}
+            </span>
+
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1 text-red-600 hover:text-red-800 transition"
+              style={{
+                background: "none",
+                border: "none",
+                color: "#dc2626",
+                cursor: "pointer",
+                fontWeight: "500",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
             >
               <LogOut size={18} /> Logout
             </button>
-          </div>
+          </>
         )}
       </header>
 
+      {/* Home Page */}
       {currentView === "home" && (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4">
-              Resume Builder
-            </h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Create professional, customizable resumes in minutes. Build your
-              resume or view a sample.
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "80vh", padding: "20px" }}>
+          <div style={{ textAlign: "center", marginBottom: "50px" }}>
+            <h1 style={{ fontSize: "48px", fontWeight: "bold", color: "#0f172a", marginBottom: "10px" }}>Resume Builder</h1>
+            <p style={{ fontSize: "18px", color: "#475569", maxWidth: "600px", margin: "0 auto" }}>
+              Create professional, customizable resumes in minutes. Build your resume or view a sample.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "25px", maxWidth: "1000px", width: "100%" }}>
+            {/* Create Resume */}
             <button
               onClick={() => setCurrentView("create")}
-              className="group bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              style={cardStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition">
-                  <PlusCircle className="text-blue-600" size={32} />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                  Create Resume
-                </h2>
-                <p className="text-slate-600">
-                  Build your professional resume from scratch
-                </p>
-              </div>
+              {iconBox(<PlusCircle size={32} color="#2563eb" />, "#dbeafe")}
+              <h2 style={cardTitle}>Create Resume</h2>
+              <p style={cardText}>Build your professional resume from scratch</p>
             </button>
 
+            {/* View Sample */}
             <button
               onClick={() => setCurrentView("sample")}
-              className="group bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              style={cardStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-200 transition">
-                  <User className="text-green-600" size={32} />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                  View Sample
-                </h2>
-                <p className="text-slate-600">
-                  See a complete resume example
-                </p>
-              </div>
+              {iconBox(<User size={32} color="#16a34a" />, "#dcfce7")}
+              <h2 style={cardTitle}>View Sample</h2>
+              <p style={cardText}>See a complete resume example</p>
             </button>
 
+            {/* Edit Sample */}
             <button
               onClick={() => {
                 setResumeData(nirubamaResume);
                 setCurrentView("create");
               }}
-              className="group bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              style={cardStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-amber-200 transition">
-                  <FileText className="text-amber-600" size={32} />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                  Edit Sample
-                </h2>
-                <p className="text-slate-600">
-                  Start with a pre-filled template
-                </p>
-              </div>
+              {iconBox(<FileText size={32} color="#f59e0b" />, "#fef3c7")}
+              <h2 style={cardTitle}>Edit Sample</h2>
+              <p style={cardText}>Start with a pre-filled template</p>
+            </button>
+
+            {/* View Saved */}
+            <button
+              onClick={() => setCurrentView("saved")}
+              style={cardStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+            >
+              {iconBox(<FileText size={32} color="#e91e63" />, "#ffd6e7")}
+              <h2 style={cardTitle}>View Saved</h2>
+              <p style={cardText}>Access all resumes you’ve saved earlier</p>
             </button>
           </div>
         </div>
       )}
 
+      {/* Create/Edit */}
       {currentView === "create" && (
-        <div className="py-8">
-          <div className="max-w-4xl mx-auto px-4 mb-6">
-            <button
-              onClick={() => {
-                setCurrentView("home");
-                setResumeData(null);
-              }}
-              className="text-slate-600 hover:text-slate-900 font-medium"
-            >
-              ← Back to Home
-            </button>
-          </div>
+        <div style={{ padding: "30px" }}>
+          <button onClick={() => setCurrentView("home")} style={backButton}>← Back to Home</button>
           <ResumeForm
             onSubmit={handleFormSubmit}
             initialData={resumeData || undefined}
@@ -193,55 +203,76 @@ function App() {
         </div>
       )}
 
-      {currentView === "preview" && resumeData && (
-        <div className="py-8">
-          <div className="max-w-5xl mx-auto px-4 mb-6 print:hidden flex justify-between items-center">
-            <button
-              onClick={() => setCurrentView("create")}
-              className="text-slate-600 hover:text-slate-900 font-medium"
-            >
-              ← Edit Resume
-            </button>
-            <div className="flex gap-4">
-              <button
-                onClick={handlePrint}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-              >
-                Download PDF
-              </button>
-              <button
-                onClick={() => setCurrentView("home")}
-                className="px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition"
-              >
-                Home
-              </button>
-            </div>
-          </div>
-          <ResumeView data={resumeData} />
-        </div>
-      )}
+      {/* Saved */}
+{currentView === "saved" && (
+  <div style={{ padding: "30px" }}>
+    <button onClick={() => setCurrentView("home")} style={backButton}>← Back to Home</button>
+    <SavedResumes
+      onEdit={(data: ResumeData) => {
+        setResumeData(data); // set the data to edit
+        setCurrentView("create"); // switch to create/edit page
+      }}
+    />
+  </div>
+)}
 
+
+      {/* Sample */}
       {currentView === "sample" && (
-        <div className="py-8">
-          <div className="max-w-5xl mx-auto px-4 mb-6 print:hidden flex justify-between items-center">
-            <button
-              onClick={() => setCurrentView("home")}
-              className="text-slate-600 hover:text-slate-900 font-medium"
-            >
-              ← Back to Home
-            </button>
-            <button
-              onClick={handlePrint}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            >
-              Download PDF
-            </button>
-          </div>
-          <ResumeView data={nirubamaResume} />
+        <div style={{ padding: "30px" }}>
+          <button onClick={() => setCurrentView("home")} style={backButton}>← Back to Home</button>
         </div>
       )}
     </div>
   );
 }
+
+/* Inline Styles */
+const cardStyle: React.CSSProperties = {
+  backgroundColor: "#fff",
+  borderRadius: "20px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+  padding: "30px",
+  transition: "all 0.3s ease",
+  cursor: "pointer",
+  textAlign: "center",
+};
+
+const cardTitle: React.CSSProperties = {
+  fontSize: "22px",
+  fontWeight: "bold",
+  color: "#1e293b",
+  marginBottom: "6px",
+};
+
+const cardText: React.CSSProperties = {
+  color: "#475569",
+};
+
+const iconBox = (icon: JSX.Element, bgColor: string) => (
+  <div
+    style={{
+      width: "70px",
+      height: "70px",
+      backgroundColor: bgColor,
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      margin: "0 auto 15px",
+    }}
+  >
+    {icon}
+  </div>
+);
+
+const backButton: React.CSSProperties = {
+  color: "#475569",
+  fontWeight: "500",
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  marginBottom: "20px",
+};
 
 export default App;

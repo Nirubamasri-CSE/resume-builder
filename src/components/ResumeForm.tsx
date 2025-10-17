@@ -178,7 +178,7 @@ export default function ResumeForm({ onSubmit, initialData }: ResumeFormProps) {
 const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
 
-  const { profile } = formData || {};
+  const { profile } = formData;
 
   if (
     profile?.fullName === "NIRUBAMA SRI R" ||
